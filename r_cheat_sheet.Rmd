@@ -20,6 +20,9 @@ df |> # Pipes are extra helpful when writing big chunks
 
 function_name(argument1 = value1, argument2 = value2, ...) # Function generally have this structure
 
+reprex::reprex()
+
+
 ```
 
 # KEY FUNCTIONS (RUN THIS BITCH) ---------------------------------------
@@ -27,7 +30,7 @@ function_name(argument1 = value1, argument2 = value2, ...) # Function generally 
 # key_packages_fn - These are packages I tend to work with often. We are installing and setting up collectivly.
 key_packages_fn <- function() {
   # List of packages
-  key_packages <- c("tidyverse", "readr", "dplyr", "ggplot2", "rmarkdown", "xml2", "plotly", "shiny", "ggthemes", "janitor", "styler", "arrow", "ggsci", "rstudioapi")
+  key_packages <- c("tidyverse", "readr", "dplyr", "ggplot2", "rmarkdown", "xml2", "plotly", "shiny", "ggthemes", "janitor", "styler", "arrow", "ggsci", "rstudioapi", "ggridges")
   # Check if each package is installed, and install it if not
   for (pkg in key_packages) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -101,7 +104,27 @@ col_datetime() # Create date-times
 col_number() # Ignores non-numeric components, useful for currencies
 col_skip() # Skips column so it's not included
 cols_only() # Reads only specified columns
+
+write_csv(name, "name.csv") # For writing a file
+
+read_rds() / write_rds() # Store the exact R object that you stored
+
+read_parquet() / write_parquet() # File format that can be shared across languages
+
+tibble(         # Manually set up a tibble
+  x = c(1,2,3),
+  y = c("h","m", "g"),
+  z = c(0.08, 0.83, 0.60)
+)
+
+tribble(        # Transported tibble
+  ~x, ~y, ~z,
+  1, "h", 0.08,
+  2,"m", 0.83,
+  5, "g", 0.60
+)
 ```
+
 # TIDYVERSE --------------------------------------------
 ```{r}
 install.packages("tidyverse")
@@ -184,7 +207,9 @@ Bar A (categorical data) <- ggplot(df, aes(x = fct_infreq(variable))) + ## fct_ 
   geom_bar() 
 
 Bar B (frequencies) <- ggplot(df, aes(x = variable, fill = variable)) +
-  geom_bar()
+  geom_bar(position = "fill")
+  # position = "fill" works like stacking, but makes each set of stacked bars the same height. This makes it easier to compare proportions across groups.
+  # position = "dodge" places overlapping objects directly beside one another. This makes it easier to compare individual values.
 
 Bar C (relative freq) <- ggplot(df, aes(x = variable, fill = variable)) +
   geom_bar(position = "fill")
@@ -197,12 +222,15 @@ Density A (numerical data) <- ggplot(df, aes(x = variable)) +
 
 Density B (numerical) <- ggplot(df, aes(x = variable, color = variable, fill = variable)) +
   geom_density(alpha = number)
+# Alpha changes the opacity
 
 Histogram (numerical) <- ggplot(df, aes(x = variable)) +
   geom_histogram(binwidth = size)
 
 Scatterplot (numerical, 3+ variables) <- ggplot(df, aes(x = variable_1, y = variable_2)) +
-  geom_point(aes(color = variable_3, shape = variable_4)) # Using facet_wrap cleans up graphs like these into subsets :)
+  geom_point(aes(color = variable_3, shape = variable_4)) +
+  geom_jitter() # Using facet_wrap cleans up graphs like these into subsets :)
+# position = "jitter" / geom_jitter() helps with overplotting, especially important for large scales. Can replace geom_point with geom_jitter.
 
 # Faceting - Displays subset of data
 faceted_plot <- ggplot(df, aes(x = variable_1, y = variable_2)) +
@@ -211,6 +239,34 @@ faceted_plot <- ggplot(df, aes(x = variable_1, y = variable_2)) +
 
 # Saving Plots
 ggsave(filename = "filename.png")
+
+# Things can be specified within the aesthetics:
+  color = "color_name"
+  size = number
+  shape = "shape_name"
+  stroke = number
+  
+# Facets
+ggplot(df, aes(x = variable_1, y = variable_2)) + 
+  geom_point() + 
+  facet_wrap(~variable_3) # Splits the plot into subplots based on categorical variable
+
+ggplot(df, aes(x = variable_1, y = variable_2)) + 
+  geom_point() + 
+  facet_grid(variable_3 ~ variable_4 scales = "free") # Facets plot with the combination of two variables, creating a grid. Freeing the scales allows different scales per variables
+
+# Bar charts, histograms, and frequency polygons bin your data and then plot bin counts, the number of points that fall in each bin.
+
+# Smoothers fit a model to your data and then plot predictions from the model.
+
+# Boxplots compute the five-number summary of the distribution and then display that summary as a specially formatted box.
+
+## Coordinate Systems
+coord_quickmap() # Sets the aspect ratio correctly for geographic maps
+
+coord_polar() # Polar coordinates reveal interesting connections between a bar chart and a coxcomb chart. REALLY COOL, makes a pie chart but fancy.
 ```
+
+
 
 
