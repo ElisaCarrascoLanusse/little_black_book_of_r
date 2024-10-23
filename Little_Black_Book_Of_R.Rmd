@@ -29,10 +29,14 @@ reprex::reprex()
 
 # KEY FUNCTIONS (RUN THIS BITCH) ---------------------------------------
 ```{r}
+
+# Source Functions
+source("/Users/elisacarrasco/Documents/GitHub/learning-r/Functions.R")
+
 # key_packages_fn - These are packages I tend to work with often. We are installing and setting up collectivly.
 key_packages_fn <- function() {
   # List of packages
-  key_packages <- c("tidyverse", "readr", "dplyr", "ggplot2", "rmarkdown", "xml2", "plotly", "shiny", "ggthemes", "janitor", "styler", "arrow", "ggsci", "rstudioapi", "ggridges")
+  key_packages <- c("tidyverse", "readr", "dplyr", "ggplot2", "rmarkdown", "xml2", "plotly", "shiny", "ggthemes", "janitor", "styler", "arrow", "ggsci", "rstudioapi", "ggridges", "patchwork", "lvplot", "hexbin")
   # Check if each package is installed, and install it if not
   for (pkg in key_packages) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -222,12 +226,18 @@ Bar C (relative freq) <- ggplot(df, aes(x = variable, fill = variable)) +
 Boxplot (categorical and numerical) <- ggplot(df, aes(x = variable, y = variable)) +
   geom_boxplot()
 
+Boxplot (letter values) <- ggplot(df, aes(x = variable, y = variable)) +
+  geom_lv(fill = ..LV..)
+
 Density A (numerical data) <- ggplot(df, aes(x = variable)) +
   geom_density(linewidth = number)
 
 Density B (numerical) <- ggplot(df, aes(x = variable, color = variable, fill = variable)) +
   geom_density(alpha = number)
 # Alpha changes the opacity
+
+Frequencyplot <- ggplot(df, aes(x = variable_1, y = after_stat(density))) +
+  geom_freqpoly(aes(color = variable_2))
 
 Histogram (numerical) <- ggplot(df, aes(x = variable)) +
   geom_histogram(binwidth = size)
@@ -236,11 +246,12 @@ Scatterplot (numerical, 3+ variables) <- ggplot(df, aes(x = variable_1, y = vari
   geom_point(aes(color = variable_3, shape = variable_4)) +
   geom_jitter() 
 # position = "jitter" / geom_jitter() helps with overplotting, especially important for large scales. Can replace geom_point with geom_jitter.
+# Alternatives to geom_jitter() are:
+  # geom_beeswarm
+  # geom_quasirandom
 
-# Faceting - Displays subset of data
-faceted_plot <- ggplot(df, aes(x = variable_1, y = variable_2)) +
-  geom_point(aes(color = variable_3, shape = variable_3)) +
-  facet_wrap(~variable_4)
+Violinplot <- ggplot(df, aes(x = variable_1, y = variable_2, fill = variable_2, color = variable_2)) +
+  geom_violin()
 
 # Saving Plots
 ggsave(filename = "filename.png")
@@ -285,7 +296,7 @@ ggplot(df = <DATA>) +
 
 # EXPLORATORY DATA ANALYSIS
 ```{r}
-# Variation
+# Variation (Behavior within variables)
 "1. Which values are the most common? Why?",
 "2. Which values are rare? Why? Does that match your expectations?",
 "3. Can you see any unusual patterns? What might explain them?"
@@ -294,7 +305,36 @@ Unusual_Values <- ggplot(df, aes(x = y)) +
   geom_histogram(binwidth = 0.5) +
   coord_cartesian(ylim = c(0, 50)) # coord_cartesian() zooms in to small values on the axis, (ylim / xlim). Good for finding outliers.
 
+data_set_na_outliers <- df |> 
+  mutate(y = if_else(y < number | y > number, NA, y)) # Replacing outliers with NA helps avoid confusion when we want to get rid of them
 
+# Covariation (Behavior between variables)
+
+Covariation_cat_num <- ggplot(df, aes(x = catvariable_1, y = after_stat(density))) + # after_stat lets you calculate certain statistics in order to become one of the visualized variables
+  geom_freqpoly(aes(color = variable_2), binwidth = 500, linewidth = 0.75)
+
+Covariation_cat_cat_SIZE <- ggplot(df, aes(x = variable_1, y = variable_2)) +
+  geom_count() # Plots the count of each covariation, size guides
+
+Covariation_cat_cat_COLOR <- df |> 
+  group_by(variable_1, variable_2) |> 
+  count(variable_1, variable_2) |>  
+  ggplot(aes(x = variable_1, y = variable_2)) +
+  geom_tile(aes(fill = n)) # Plots the count of each covariation, color guides
+
+Covariation_num_num <- ggplot(df, aes(x = variable_1, y = variable_2)) +
+  geom_point() # This is especially useful for smaller data sets
+
+Covariation_num_num <- ggplot(df, aes(x = variable_1, y = variable_2)) +
+  geom_bin2d() # Useful for large data sets, creates rectangular bins.
+
+Covariation_num_num <- ggplot(df, aes(x = variable_1, y = variable_2)) +
+  geom_hex() # Useful for large data sets, creates hexagonal bins.
+
+
+
+
+- after_stat(density) # Density is a standardized count that is calculated form the values. Useful to get clear visualizations in cases like this where the raw count might not be representative.
 
 
 ```
